@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bot Mail IA</title>
+  <link rel="stylesheet" href="./taskpane.css" />
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+</head>
+<body>
+  <main>
+    <h1>Bot Mail IA</h1>
+
+    <p class="small">
+      Ouvre un mail Outlook, clique sur répondre, puis utilise ce panneau pour générer et insérer une réponse.
+    </p>
+
+    <button id="readMailBtn">Lire le mail ouvert</button>
+
+    <label>Mail détecté</label>
+    <textarea id="emailText" placeholder="Le contenu du mail apparaîtra ici..."></textarea>
+
+    <label>Ton intention</label>
+    <textarea id="intentionText" placeholder="Ex : Dis-lui que j’ai bien reçu et que je reviens demain."></textarea>
+
+    <label>Mode de confidentialité</label>
+    <select id="privacyMode">
+      <option value="normal">Mode normal - réponse plus précise</option>
+      <option value="confidential">Mode confidentiel - données limitées</option>
+    </select>
+
+    <p class="small">
+      En mode confidentiel, le contenu complet du mail n’est pas envoyé à l’IA.
+    </p>
+
+    <div class="row">
+      <button id="voiceBtn">🎤 Dicter</button>
+      <button id="generateBtn">Générer</button>
+    </div>
+
+    <label>Réponse proposée</label>
+    <textarea id="replyText" placeholder="La réponse IA apparaîtra ici..."></textarea>
+
+    <div class="row">
+      <button id="insertBtn">Insérer dans Outlook</button>
+      <button id="clearBtn" class="secondary">Effacer</button>
+    </div>
+
+    <p id="status"></p>
+  </main>
+
+  <script src="./taskpane.js"></script>
+</body>
+</html>

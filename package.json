@@ -1,0 +1,10 @@
+{
+  "name": "bot-mail-outlook-addin",
+  "version": "1.0.0",
+  "description": "Bot IA pour rédiger des réponses Outlook",
+  "scripts": {
+    "dev": "node local-server.js",
+    "start": "node local-server.js"
+  },
+  "dependencies": {}
+}
