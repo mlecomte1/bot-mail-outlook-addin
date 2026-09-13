@@ -80,9 +80,9 @@ function officeAsync(executor) {
 }
 
 function getOfficeIdentityToken() {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     if (!officeReady || !Office.context?.mailbox?.getUserIdentityTokenAsync) {
-      reject(new Error("Outlook n'est pas prêt."));
+      resolve("");
       return;
     }
 
@@ -92,7 +92,7 @@ function getOfficeIdentityToken() {
         return;
       }
 
-      reject(new Error("Impossible d'authentifier le complément Outlook."));
+      resolve("");
     });
   });
 }

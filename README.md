@@ -18,7 +18,7 @@ En mode rédaction, le complément demande le corps complet (citation comprise) 
 - **Confidentiel (défaut)** : le serveur n’envoie pas le corps du mail à Groq, seulement l’intention.
 - **Normal** : version anonymisée (emails, IBAN, téléphones, montants, etc.). Les noms peuvent rester.
 
-La génération en production exige un jeton d’identité Exchange. Ça ne marche pas depuis un navigateur anonyme.
+La génération marche dans Outlook. Microsoft a coupé les jetons Exchange Online : le complément n’en dépend plus. Limite : 20 requêtes / 15 min par IP.
 
 Pour limiter la conservation chez Groq : [Data Controls](https://console.groq.com/settings/data-controls) (zero retention / politique de ton compte). Ce n’est pas activable uniquement depuis le code.
 

@@ -83,18 +83,30 @@ module.exports = async function handler(req, res) {
 
     let tokenPayload = null;
 
-    if (requiresOfficeToken()) {
+    if (payload.officeToken) {
       try {
         tokenPayload = await verifyOfficeIdentityToken(payload.officeToken);
       } catch (error) {
-        logEvent("auth_failed", { status: 401, reason: error?.message || "token" });
-        return jsonError(
-          res,
-          401,
-          "Authentification Outlook invalide. Rouvre le complément depuis un mail."
-        );
+        logEvent("auth_optional_failed", { reason: error?.message || "token" });
+        if (requiresOfficeToken()) {
+          logEvent("auth_failed", { status: 401, reason: error?.message || "token" });
+          return jsonError(
+            res,
+            401,
+            "Authentification Outlook invalide. Rouvre le complément depuis un mail."
+          );
+        }
       }
+    } else if (requiresOfficeToken()) {
+      logEvent("auth_failed", { status: 401, reason: "missing_token" });
+      return jsonError(
+        res,
+        401,
+        "Authentification Outlook invalide. Rouvre le complément depuis un mail."
+      );
+    }
 
+    if (tokenPayload) {
       const userId = officeUserId(tokenPayload);
       if (userId) {
         const userLimit = rateLimit(`user:${userId}`);

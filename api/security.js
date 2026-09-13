@@ -413,7 +413,7 @@ function logEvent(event, details) {
 }
 
 function requiresOfficeToken() {
-  return Boolean(process.env.VERCEL);
+  return process.env.REQUIRE_OFFICE_TOKEN === "1";
 }
 
 module.exports = {

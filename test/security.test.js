@@ -78,8 +78,10 @@ test("CORS autorise l'origine du complément", async () => {
   );
 });
 
-test("production sans jeton Outlook renvoie 401", async () => {
+test("production sans jeton Exchange continue (jetons Outlook désactivés par Microsoft)", async () => {
   process.env.VERCEL = "1";
+  delete process.env.REQUIRE_OFFICE_TOKEN;
+  delete process.env.GROQ_API_KEY;
   const res = mockRes();
   await handler(
     {
@@ -89,11 +91,32 @@ test("production sans jeton Outlook renvoie 401", async () => {
         email: "Bonjour",
         intention: "Réponds poliment",
         privacyMode: "normal",
-        officeToken: "not-a-jwt",
       },
     },
     res
   );
   delete process.env.VERCEL;
+  assert.equal(res.statusCode, 500);
+  assert.equal(res.body?.error, "Service IA indisponible.");
+});
+
+test("REQUIRE_OFFICE_TOKEN sans jeton renvoie 401", async () => {
+  process.env.VERCEL = "1";
+  process.env.REQUIRE_OFFICE_TOKEN = "1";
+  const res = mockRes();
+  await handler(
+    {
+      method: "POST",
+      headers: { origin: "https://bot-mail-outlook-addin-chi.vercel.app" },
+      body: {
+        email: "Bonjour",
+        intention: "Réponds poliment",
+        privacyMode: "normal",
+      },
+    },
+    res
+  );
+  delete process.env.VERCEL;
+  delete process.env.REQUIRE_OFFICE_TOKEN;
   assert.equal(res.statusCode, 401);
 });
