@@ -5,6 +5,8 @@ let officeReady = false;
 let recognition = null;
 let listening = false;
 let uiBound = false;
+let privacyMode = "confidential";
+let language = "auto";
 
 function getApiUrl() {
   return new URL("/api/generate-reply", window.location.href).toString();
@@ -15,12 +17,13 @@ Office.onReady((info) => {
 
   if (info.host === Office.HostType.Outlook) {
     officeReady = true;
-    setStatus("Complément prêt. Lis le mail, puis génère une réponse.");
+    setStatus("Complément prêt.");
+    readCurrentMail();
     return;
   }
 
   officeReady = false;
-  setStatus("Pour insérer le texte dans un mail, ouvre ce panneau depuis Outlook.");
+  setStatus("Ouvre ce panneau depuis Outlook pour lire et insérer un mail.");
 });
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -37,13 +40,42 @@ function bindUi() {
   document.getElementById("generateBtn").addEventListener("click", generateReply);
   document.getElementById("insertBtn").addEventListener("click", insertReplyIntoOutlook);
   document.getElementById("clearBtn").addEventListener("click", clearAll);
+  bindPills("privacyPills", "data-privacy", (value) => {
+    privacyMode = value;
+    updatePrivacyHint();
+  });
+  bindPills("languagePills", "data-lang", (value) => {
+    language = value;
+  });
+  updatePrivacyHint();
   renderDrafts();
+}
+
+function bindPills(listId, attr, onChange) {
+  const root = document.getElementById(listId);
+  root.addEventListener("click", (event) => {
+    const button = event.target.closest(`button[${attr}]`);
+    if (!button) {
+      return;
+    }
+    root.querySelectorAll("button").forEach((item) => item.classList.remove("active"));
+    button.classList.add("active");
+    onChange(button.getAttribute(attr));
+  });
+}
+
+function updatePrivacyHint() {
+  document.getElementById("privacyHint").textContent =
+    privacyMode === "normal"
+      ? "Version anonymisée du mail envoyée à l’IA."
+      : "Le contenu du mail n’est pas envoyé à l’IA.";
 }
 
 function setStatus(message, isError) {
   const statusEl = document.getElementById("status");
   statusEl.textContent = message;
   statusEl.classList.toggle("error", Boolean(isError));
+  statusEl.classList.toggle("ok", !isError && /prêt|générée|insérée|lu|dictée|restauré/i.test(message));
 }
 
 function escapeHtml(text) {
@@ -176,10 +208,11 @@ async function readCurrentMail() {
   lines.push(await getMailBody(item));
 
   document.getElementById("emailText").value = lines.join("\n").trim();
+  document.getElementById("intentionText").focus();
   setStatus(
     composeType
-      ? "Mail lu (mode rédaction, citation incluse si disponible)."
-      : "Mail lu depuis Outlook."
+      ? "Mail lu (mode rédaction)."
+      : "Mail lu."
   );
 }
 
@@ -194,7 +227,7 @@ function toggleDictation() {
 
   if (!SpeechRecognition) {
     intentionEl.focus();
-    setStatus("Dictée du navigateur indisponible. Appuie sur Windows + H.");
+    setStatus("Dictée indisponible. Appuie sur Windows + H.");
     return;
   }
 
@@ -204,7 +237,7 @@ function toggleDictation() {
   }
 
   recognition = new SpeechRecognition();
-  recognition.lang = document.getElementById("languageSelect").value === "en" ? "en-US" : "fr-FR";
+  recognition.lang = language === "en" ? "en-US" : "fr-FR";
   recognition.continuous = false;
   recognition.interimResults = false;
 
@@ -274,19 +307,29 @@ function renderDrafts() {
   const drafts = loadDrafts();
   list.innerHTML = "";
 
+  if (!drafts.length) {
+    const item = document.createElement("li");
+    item.className = "empty";
+    item.textContent = "Aucun brouillon pour l’instant.";
+    list.appendChild(item);
+    return;
+  }
+
   drafts.forEach((draft) => {
     const item = document.createElement("li");
     const button = document.createElement("button");
-    const when = draft.at ? new Date(draft.at).toLocaleString("fr-FR") : "";
+    const when = draft.at ? new Date(draft.at).toLocaleString("fr-FR", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    }) : "";
     const preview = (draft.intention || "Brouillon").slice(0, 70);
     button.type = "button";
-    button.textContent = `${when} — ${preview}`;
+    button.textContent = `${when} · ${preview}`;
     button.addEventListener("click", () => {
       document.getElementById("intentionText").value = draft.intention || "";
       document.getElementById("replyText").value = draft.reply || "";
-      if (draft.tone) {
-        document.getElementById("toneSelect").value = draft.tone;
-      }
       setStatus("Brouillon restauré.");
     });
     item.appendChild(button);
@@ -297,26 +340,27 @@ function renderDrafts() {
 async function generateReply() {
   const email = document.getElementById("emailText").value.trim();
   const intention = document.getElementById("intentionText").value.trim();
-  const privacyMode = document.getElementById("privacyMode").value;
   const generateBtn = document.getElementById("generateBtn");
 
   if (privacyMode !== "confidential" && !email) {
-    setStatus("Aucun mail à traiter. Clique d'abord sur « Lire le mail ouvert ».", true);
+    setStatus("Lis d’abord le mail ouvert.", true);
     return;
   }
 
   if (!intention) {
     setStatus("Ajoute ton intention avant de générer.", true);
+    document.getElementById("intentionText").focus();
     return;
   }
 
   setStatus(
     privacyMode === "confidential"
-      ? "Génération IA en cours en mode confidentiel..."
-      : "Génération IA en cours en mode normal..."
+      ? "Génération en cours (mode confidentiel)…"
+      : "Génération en cours…"
   );
 
   generateBtn.disabled = true;
+  generateBtn.textContent = "Génération…";
 
   try {
     let officeToken = "";
@@ -329,10 +373,10 @@ async function generateReply() {
       intention,
       privacyMode: privacyMode === "normal" ? "normal" : "confidential",
       officeToken,
-      tone: document.getElementById("toneSelect").value,
-      language: document.getElementById("languageSelect").value,
-      model: document.getElementById("modelSelect").value,
-      noSignature: document.getElementById("noSignature").checked,
+      tone: "standard",
+      language,
+      model: "openai/gpt-oss-120b",
+      noSignature: true,
       email: privacyMode === "confidential" ? "confidential" : email,
     };
 
@@ -356,33 +400,29 @@ async function generateReply() {
     }
 
     if (!response.ok) {
-      const message = data.error || "Erreur lors de la génération du texte.";
-      setStatus(message, true);
+      setStatus(data.error || "Erreur lors de la génération du texte.", true);
       return;
     }
 
     if (!data.reply) {
-      setStatus("Erreur lors de la génération : aucun texte renvoyé.", true);
+      setStatus("L’IA n’a renvoyé aucun texte.", true);
       return;
     }
 
     document.getElementById("replyText").value = data.reply;
+    document.getElementById("replyText").focus();
     saveDraft({
       at: Date.now(),
       intention,
       reply: data.reply,
-      tone: payload.tone,
     });
-    setStatus(
-      payload.privacyMode === "confidential"
-        ? "Réponse générée en mode confidentiel."
-        : "Réponse générée en mode normal."
-    );
+    setStatus("Réponse générée.");
   } catch (error) {
     console.error(error);
     setStatus(error?.message || "Impossible de contacter l'API IA.", true);
   } finally {
     generateBtn.disabled = false;
+    generateBtn.textContent = "Générer";
   }
 }
 

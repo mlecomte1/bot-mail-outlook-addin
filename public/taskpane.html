@@ -7,89 +7,77 @@
     content="default-src 'self'; script-src 'self' https://appsforoffice.microsoft.com https://ajax.aspnetcdn.com; style-src 'self'; connect-src 'self' https://www.google.com https://www.googleapis.com https://speech.googleapis.com; img-src 'self'; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"
   />
   <meta http-equiv="Referrer-Policy" content="no-referrer" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Bot Mail IA</title>
   <link rel="stylesheet" href="./taskpane.css" />
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
 </head>
 <body>
+  <header class="top">
+    <div>
+      <h1>Bot Mail IA</h1>
+      <p class="lede">Lis le mail, dis ce que tu veux, insère la réponse.</p>
+    </div>
+    <p id="status" class="status" role="status">Ouverture du complément…</p>
+  </header>
+
   <main>
-    <h1>Bot Mail IA</h1>
-
-    <p class="small">
-      Ouvre un mail Outlook, lis-le, indique ton intention, puis génère et insère la réponse.
-    </p>
-
-    <button id="readMailBtn">Lire le mail ouvert</button>
-
-    <label for="emailText">Mail détecté</label>
-    <textarea id="emailText" placeholder="Le contenu du mail apparaîtra ici..."></textarea>
-
-    <label for="intentionText">Ton intention</label>
-    <textarea id="intentionText" placeholder="Ex : Dis-lui que j’ai bien reçu et que je reviens demain."></textarea>
-
-    <label for="privacyMode">Mode de confidentialité</label>
-    <select id="privacyMode">
-      <option value="confidential" selected>Mode confidentiel - données limitées (recommandé)</option>
-      <option value="normal">Mode normal - réponse plus précise</option>
-    </select>
-
-    <p class="small">
-      Par défaut, le contenu du mail n’est pas envoyé à l’IA. Le mode normal envoie une version anonymisée à Groq.
-    </p>
-
-    <div class="grid-2">
-      <div>
-        <label for="toneSelect">Ton</label>
-        <p class="hint">Standard = poli et complet. Court = 5 à 8 lignes. Formel = vouvoiement soigné.</p>
-        <select id="toneSelect">
-          <option value="standard">Standard — poli, longueur normale</option>
-          <option value="court">Court — 5 à 8 lignes</option>
-          <option value="formel">Formel — vouvoiement, plus cérémonieux</option>
-        </select>
+    <section class="card">
+      <div class="card-head">
+        <h2>Mail</h2>
+        <button id="readMailBtn" class="ghost" type="button">Lire le mail</button>
       </div>
-      <div>
-        <label for="languageSelect">Langue</label>
-        <p class="hint">Auto suit la langue de ton intention.</p>
-        <select id="languageSelect">
-          <option value="auto">Auto</option>
-          <option value="fr">Français</option>
-          <option value="en">English</option>
-        </select>
+      <textarea
+        id="emailText"
+        placeholder="Le mail ouvert apparaîtra ici."
+      ></textarea>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Intention</h2>
+        <div class="pills" id="languagePills" role="group" aria-label="Langue">
+          <button type="button" data-lang="auto" class="active">Auto</button>
+          <button type="button" data-lang="fr">FR</button>
+          <button type="button" data-lang="en">EN</button>
+        </div>
       </div>
-    </div>
+      <textarea
+        id="intentionText"
+        placeholder="Ex. : Dis-lui que j’ai bien reçu et que je reviens demain."
+      ></textarea>
+      <div class="toolbar">
+        <div class="pills" id="privacyPills" role="group" aria-label="Confidentialité">
+          <button type="button" data-privacy="confidential" class="active">Confidentiel</button>
+          <button type="button" data-privacy="normal">Plus précis</button>
+        </div>
+        <p class="hint" id="privacyHint">Le contenu du mail n’est pas envoyé à l’IA.</p>
+      </div>
+      <div class="actions">
+        <button id="voiceBtn" class="secondary" type="button">Dicter</button>
+        <button id="generateBtn" type="button">Générer</button>
+      </div>
+    </section>
 
-    <label for="modelSelect">Modèle</label>
-    <p class="hint">C’est le moteur IA. Qualité = plus soigné. Rapide = plus vite. Qwen = une autre IA, utile si Groq est saturé.</p>
-    <select id="modelSelect">
-      <option value="openai/gpt-oss-120b">Qualité — GPT-OSS 120B (recommandé)</option>
-      <option value="openai/gpt-oss-20b">Rapide — GPT-OSS 20B</option>
-      <option value="qwen/qwen3.8-27b">Alternative — Qwen 3.8 27B</option>
-    </select>
+    <section class="card">
+      <div class="card-head">
+        <h2>Réponse</h2>
+        <button id="clearBtn" class="ghost" type="button">Effacer</button>
+      </div>
+      <textarea
+        id="replyText"
+        placeholder="La réponse proposée s’affichera ici."
+      ></textarea>
+      <div class="actions">
+        <button id="insertBtn" type="button">Insérer dans Outlook</button>
+      </div>
+    </section>
 
-    <label class="check" for="noSignature">
-      <input id="noSignature" type="checkbox" checked />
-      Ne pas inventer de signature
-    </label>
-    <p class="hint">Outlook met déjà ta vraie signature. Coché : l’IA s’arrête à la formule de politesse, sans inventer ton nom, ton poste ou « [Votre entreprise] ». Décoche seulement si tu veux qu’elle propose une clôture plus longue.</p>
-
-    <div class="row">
-      <button id="voiceBtn" type="button">Dicter</button>
-      <button id="generateBtn" type="button">Générer</button>
-    </div>
-
-    <label for="replyText">Réponse proposée</label>
-    <textarea id="replyText" placeholder="La réponse IA apparaîtra ici..."></textarea>
-
-    <div class="row">
-      <button id="insertBtn" type="button">Insérer dans Outlook</button>
-      <button id="clearBtn" class="secondary" type="button">Effacer</button>
-    </div>
-
-    <label>Brouillons récents</label>
-    <p class="small">Stockés uniquement sur cet ordinateur, sans le contenu du mail.</p>
-    <ul id="draftList"></ul>
-
-    <p id="status"></p>
+    <section class="card drafts">
+      <h2>Brouillons</h2>
+      <p class="hint">Sur cet ordinateur seulement, sans le contenu du mail.</p>
+      <ul id="draftList"></ul>
+    </section>
   </main>
 
   <script src="./taskpane.js"></script>
