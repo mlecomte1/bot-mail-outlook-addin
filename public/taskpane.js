@@ -15,15 +15,12 @@ Office.onReady((info) => {
 
   if (info.host === Office.HostType.Outlook) {
     officeReady = true;
-    setStatus("Complément prêt.");
+    setStatus("Complément prêt. Lis le mail, puis génère une réponse.");
     return;
   }
 
   officeReady = false;
-  setStatus(
-    "Ouvre Bot Mail IA depuis Outlook, sur un mail. Cette page Vercel ne peut pas générer de réponse.",
-    true
-  );
+  setStatus("Pour insérer le texte dans un mail, ouvre ce panneau depuis Outlook.");
 });
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -303,8 +300,8 @@ async function generateReply() {
   const privacyMode = document.getElementById("privacyMode").value;
   const generateBtn = document.getElementById("generateBtn");
 
-  if (!email) {
-    setStatus("Aucun mail à traiter.", true);
+  if (privacyMode !== "confidential" && !email) {
+    setStatus("Aucun mail à traiter. Clique d'abord sur « Lire le mail ouvert ».", true);
     return;
   }
 
@@ -361,7 +358,6 @@ async function generateReply() {
     if (!response.ok) {
       const message = data.error || "Erreur lors de la génération du texte.";
       setStatus(message, true);
-      document.getElementById("replyText").value = message;
       return;
     }
 

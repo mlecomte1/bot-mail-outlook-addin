@@ -40,14 +40,16 @@
     <div class="grid-2">
       <div>
         <label for="toneSelect">Ton</label>
+        <p class="hint">Standard = poli et complet. Court = 5 à 8 lignes. Formel = vouvoiement soigné.</p>
         <select id="toneSelect">
-          <option value="standard">Standard</option>
-          <option value="court">Court</option>
-          <option value="formel">Formel</option>
+          <option value="standard">Standard — poli, longueur normale</option>
+          <option value="court">Court — 5 à 8 lignes</option>
+          <option value="formel">Formel — vouvoiement, plus cérémonieux</option>
         </select>
       </div>
       <div>
         <label for="languageSelect">Langue</label>
+        <p class="hint">Auto suit la langue de ton intention.</p>
         <select id="languageSelect">
           <option value="auto">Auto</option>
           <option value="fr">Français</option>
@@ -57,16 +59,18 @@
     </div>
 
     <label for="modelSelect">Modèle</label>
+    <p class="hint">C’est le moteur IA. Qualité = plus soigné. Rapide = plus vite. Qwen = une autre IA, utile si Groq est saturé.</p>
     <select id="modelSelect">
-      <option value="openai/gpt-oss-120b">Qualité — GPT-OSS 120B</option>
+      <option value="openai/gpt-oss-120b">Qualité — GPT-OSS 120B (recommandé)</option>
       <option value="openai/gpt-oss-20b">Rapide — GPT-OSS 20B</option>
-      <option value="qwen/qwen3.8-27b">Qwen 3.8 27B</option>
+      <option value="qwen/qwen3.8-27b">Alternative — Qwen 3.8 27B</option>
     </select>
 
-    <label class="check">
+    <label class="check" for="noSignature">
       <input id="noSignature" type="checkbox" checked />
       Ne pas inventer de signature
     </label>
+    <p class="hint">Outlook met déjà ta vraie signature. Coché : l’IA s’arrête à la formule de politesse, sans inventer ton nom, ton poste ou « [Votre entreprise] ». Décoche seulement si tu veux qu’elle propose une clôture plus longue.</p>
 
     <div class="row">
       <button id="voiceBtn" type="button">Dicter</button>

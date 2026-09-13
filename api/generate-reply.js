@@ -29,7 +29,19 @@ const TONE_HINTS = {
 };
 
 function jsonError(res, status, message) {
+  if (typeof res.setHeader === "function") {
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+  }
   return res.status(status).json({ error: message });
+}
+
+function extractReply(data) {
+  const message = data?.choices?.[0]?.message;
+  if (!message || typeof message !== "object") {
+    return "";
+  }
+
+  return sanitizeReply(message.content);
 }
 
 function pickModel(value) {
@@ -195,6 +207,7 @@ Rédige une réponse email professionnelle en texte brut uniquement.`,
 
     if (GROQ_MODELS[model].reasoning) {
       groqBody.reasoning_effort = "low";
+      groqBody.include_reasoning = false;
     }
 
     const groqResponse = await fetch(
@@ -216,7 +229,7 @@ Rédige une réponse email professionnelle en texte brut uniquement.`,
       return jsonError(res, 502, "Erreur pendant la génération IA.");
     }
 
-    const reply = sanitizeReply(data.choices?.[0]?.message?.content);
+    const reply = extractReply(data);
 
     if (!reply) {
       logEvent("empty_reply", { status: 502 });
@@ -228,6 +241,9 @@ Rédige une réponse email professionnelle en texte brut uniquement.`,
     }
 
     logEvent("generate_ok", { status: 200, model, privacyMode, tone });
+    if (typeof res.setHeader === "function") {
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+    }
     return res.status(200).json({ reply });
   } catch (error) {
     logEvent("server_error", { status: 500, reason: error?.message || "unknown" });

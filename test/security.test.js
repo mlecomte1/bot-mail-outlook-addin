@@ -37,6 +37,10 @@ test("anonymise email, iban et montant", () => {
   assert.match(text, /\[MONTANT\]/);
 });
 
+test("sanitizeReply conserve les accents", () => {
+  assert.equal(sanitizeReply("C'est noté, merci."), "C'est noté, merci.");
+});
+
 test("sanitizeReply enlève le HTML", () => {
   assert.equal(sanitizeReply("<b>Bonjour</b>"), "Bonjour");
 });

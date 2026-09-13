@@ -14,10 +14,16 @@ h1 {
   margin-bottom: 8px;
 }
 
-.small {
+.small,
+.hint {
   font-size: 13px;
   color: #555;
   line-height: 1.4;
+}
+
+.hint {
+  font-weight: normal;
+  margin: 0 0 6px;
 }
 
 label {
@@ -29,10 +35,14 @@ label {
 
 label.check {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   font-weight: normal;
   margin-top: 12px;
+}
+
+label.check input {
+  margin-top: 3px;
 }
 
 textarea {

@@ -103,7 +103,7 @@ const server = http.createServer((req, res) => {
       return;
     }
 
-    let requestBody = "";
+    let requestBody = Buffer.alloc(0);
     let tooLarge = false;
 
     req.on("data", (chunk) => {
@@ -111,9 +111,9 @@ const server = http.createServer((req, res) => {
         return;
       }
 
-      requestBody += chunk;
+      requestBody = Buffer.concat([requestBody, chunk]);
 
-      if (Buffer.byteLength(requestBody) > MAX_BODY_BYTES) {
+      if (requestBody.length > MAX_BODY_BYTES) {
         tooLarge = true;
         req.destroy();
         sendJson(req, res, 413, { error: "Requête trop volumineuse." });
@@ -127,9 +127,9 @@ const server = http.createServer((req, res) => {
 
       let body = {};
 
-      if (requestBody) {
+      if (requestBody.length) {
         try {
-          body = JSON.parse(requestBody);
+          body = JSON.parse(requestBody.toString("utf8"));
         } catch {
           sendJson(req, res, 400, { error: "JSON invalide." });
           return;
