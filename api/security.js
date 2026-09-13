@@ -1,7 +1,7 @@
 const crypto = require("crypto");
 
 const ALLOWED_ORIGINS = [
-  "https://bot-mail-outlook-addin.vercel.app",
+  "https://bot-mail-outlook-addin-chi.vercel.app",
   "http://localhost:3000",
   "http://127.0.0.1:3000",
 ];
@@ -13,7 +13,20 @@ const RATE_WINDOW_MS = 15 * 60 * 1000;
 const RATE_MAX_REQUESTS = 20;
 const METADATA_TTL_MS = 12 * 60 * 60 * 1000;
 
-const DEFAULT_AUDIENCE = "https://bot-mail-outlook-addin.vercel.app";
+function productionAudience() {
+  if (process.env.ADDIN_AUDIENCE) {
+    return process.env.ADDIN_AUDIENCE.replace(/\/$/, "");
+  }
+
+  const host = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  if (host) {
+    return host.startsWith("http") ? host.replace(/\/$/, "") : `https://${host}`;
+  }
+
+  return "https://bot-mail-outlook-addin-chi.vercel.app";
+}
+
+const DEFAULT_AUDIENCE = productionAudience();
 const MANIFEST_ID = "6c6d9c3d-6c86-4f7d-9b5a-111111111111";
 const DEFAULT_METADATA_URL =
   "https://outlook.office.com/autodiscover/metadata/json/1";
@@ -343,7 +356,7 @@ async function verifyOfficeIdentityToken(token) {
     throw new Error("nbf");
   }
 
-  const expectedAudience = process.env.ADDIN_AUDIENCE || DEFAULT_AUDIENCE;
+  const expectedAudience = productionAudience();
   if (!audienceMatches(payload, expectedAudience)) {
     throw new Error("aud");
   }

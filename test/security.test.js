@@ -68,13 +68,13 @@ test("CORS autorise l'origine du complément", async () => {
   await handler(
     {
       method: "OPTIONS",
-      headers: { origin: "https://bot-mail-outlook-addin.vercel.app" },
+      headers: { origin: "https://bot-mail-outlook-addin-chi.vercel.app" },
     },
     res
   );
   assert.equal(
     res.headers["Access-Control-Allow-Origin"],
-    "https://bot-mail-outlook-addin.vercel.app"
+    "https://bot-mail-outlook-addin-chi.vercel.app"
   );
 });
 
@@ -84,7 +84,7 @@ test("production sans jeton Outlook renvoie 401", async () => {
   await handler(
     {
       method: "POST",
-      headers: { origin: "https://bot-mail-outlook-addin.vercel.app" },
+      headers: { origin: "https://bot-mail-outlook-addin-chi.vercel.app" },
       body: {
         email: "Bonjour",
         intention: "Réponds poliment",

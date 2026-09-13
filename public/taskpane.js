@@ -10,10 +10,20 @@ function getApiUrl() {
   return new URL("/api/generate-reply", window.location.href).toString();
 }
 
-Office.onReady(() => {
-  officeReady = true;
+Office.onReady((info) => {
   bindUi();
-  setStatus("Complément prêt.");
+
+  if (info.host === Office.HostType.Outlook) {
+    officeReady = true;
+    setStatus("Complément prêt.");
+    return;
+  }
+
+  officeReady = false;
+  setStatus(
+    "Ouvre Bot Mail IA depuis Outlook, sur un mail. Cette page Vercel ne peut pas générer de réponse.",
+    true
+  );
 });
 
 document.addEventListener("DOMContentLoaded", () => {

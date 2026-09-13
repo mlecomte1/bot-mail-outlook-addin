@@ -42,12 +42,12 @@ Variables (`.env`, jamais commitées) :
 
 ```
 GROQ_API_KEY=
-ADDIN_AUDIENCE=https://bot-mail-outlook-addin.vercel.app
+ADDIN_AUDIENCE=https://bot-mail-outlook-addin-chi.vercel.app
 ```
 
 ## Déploiement
 
-Le projet se déploie sur Vercel (`bot-mail-outlook-addin.vercel.app`).
+Le projet se déploie sur Vercel (`bot-mail-outlook-addin-chi.vercel.app`).
 
 Pour déployer depuis Git :
 
