@@ -14,6 +14,8 @@ const {
   officeUserId,
   logEvent,
   requiresOfficeToken,
+  RATE_DAY_MS,
+  RATE_MAX_DAY,
 } = require("./security");
 
 const GROQ_MODELS = {
@@ -78,6 +80,12 @@ module.exports = async function handler(req, res) {
   if (!ipLimit.ok) {
     logEvent("rate_limited", { status: 429, reason: "ip" });
     return jsonError(res, 429, "Trop de requêtes. Réessaie dans quelques minutes.");
+  }
+
+  const dayLimit = rateLimit(`day:${ip}`, RATE_DAY_MS, RATE_MAX_DAY);
+  if (!dayLimit.ok) {
+    logEvent("rate_limited", { status: 429, reason: "ip_day" });
+    return jsonError(res, 429, "Quota du jour atteint. Réessaie demain.");
   }
 
   try {

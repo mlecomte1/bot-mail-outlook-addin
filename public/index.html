@@ -2,11 +2,95 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="refresh" content="0; url=/taskpane.html" />
-  <title>Bot Mail IA</title>
-  <link rel="canonical" href="/taskpane.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; style-src 'self'; img-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"
+  />
+  <meta http-equiv="Referrer-Policy" content="no-referrer" />
+  <title>Bot Mail IA — réponses Outlook avec ton intention</title>
+  <meta
+    name="description"
+    content="Complément Outlook gratuit : lis le mail, dis ce que tu veux répondre, l’IA rédige, tu insères."
+  />
+  <link rel="stylesheet" href="./site.css" />
 </head>
 <body>
-  <p><a href="/taskpane.html">Ouvrir Bot Mail IA</a></p>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <img src="./icon.png" alt="" width="40" height="40" />
+        <div>
+          <strong>Bot Mail IA</strong>
+          <span>Complément Outlook</span>
+        </div>
+      </div>
+      <nav>
+        <a href="./privacy.html">Confidentialité</a>
+        <a href="https://github.com/mlecomte1/bot-mail-outlook-addin">GitHub</a>
+      </nav>
+    </header>
+
+    <h1>Rédige une réponse Outlook à partir de ton intention.</h1>
+    <p class="lede">
+      Tu ouvres un mail, tu dis ce que tu veux (ex. « c’est noté, je reviens demain »),
+      l’IA propose un texte, tu l’insères. Mode confidentiel par défaut : le corps du mail
+      n’est pas envoyé à l’IA.
+    </p>
+    <div class="actions">
+      <a class="btn btn-primary" href="./manifest.xml" download>Télécharger le manifeste</a>
+      <a class="btn btn-secondary" href="./taskpane.html">Voir le panneau</a>
+    </div>
+
+    <div class="grid">
+      <article class="card">
+        <h2>1. Lis</h2>
+        <p>Le complément récupère le mail ouvert dans Outlook.</p>
+      </article>
+      <article class="card">
+        <h2>2. Dis</h2>
+        <p>Tu écris ou dictes ton intention, pas un prompt compliqué.</p>
+      </article>
+      <article class="card">
+        <h2>3. Insère</h2>
+        <p>Tu relis, tu colles dans Outlook. Ta signature Outlook reste la tienne.</p>
+      </article>
+    </div>
+
+    <section>
+      <h2>Installer dans Outlook (en attendant le Store)</h2>
+      <p>
+        Aujourd’hui il faut ajouter le fichier manifeste une fois. Ensuite le bouton
+        <strong>Bot Mail IA</strong> apparaît sur tes mails.
+      </p>
+      <ol>
+        <li>Télécharge <a href="./manifest.xml" download>manifest.xml</a>.</li>
+        <li>Outlook classique Windows : Fichier → Gérer les compléments / Get Add-ins → Mes compléments → Ajouter un complément personnalisé → Ajouter à partir d’un fichier.</li>
+        <li>Choisis le <code>manifest.xml</code> téléchargé.</li>
+        <li>Ouvre un mail, clique <strong>Bot Mail IA</strong>.</li>
+      </ol>
+      <p class="note">
+        Le Microsoft Store (AppSource) est l’étape suivante : là, n’importe qui pourra
+        l’installer sans fichier XML. En attendant, ce sideload marche pour tester et pour
+        un petit groupe.
+      </p>
+    </section>
+
+    <section>
+      <h2>Gratuit, mais avec des limites</h2>
+      <p>
+        L’IA tourne sur Groq. Pour que tout le monde puisse s’en servir, chaque adresse IP
+        est limitée (10 générations / 15 min, 40 / jour). Si tu construis un usage intensif
+        en entreprise, le déploiement centralisé Microsoft 365 ou une clé Groq dédiée sera
+        plus adapté.
+      </p>
+    </section>
+
+    <footer>
+      <a href="./privacy.html">Politique de confidentialité</a>
+      ·
+      <a href="https://github.com/mlecomte1/bot-mail-outlook-addin">Code source</a>
+    </footer>
+  </div>
 </body>
 </html>

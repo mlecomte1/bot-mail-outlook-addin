@@ -1,33 +1,26 @@
 # Bot Mail IA
 
-Complément Outlook pour rédiger une réponse professionnelle à partir du mail ouvert et de ton intention.
+Complément Outlook pour rédiger une réponse à partir du mail ouvert et de ton intention.
 
-## Utilisation
+Site : https://bot-mail-outlook-addin-chi.vercel.app  
+Code : https://github.com/mlecomte1/bot-mail-outlook-addin
 
-1. Ouvre un mail dans Outlook (lecture ou réponse).
-2. Lance **Bot Mail IA**.
-3. Clique **Lire le mail ouvert**.
-4. Écris ou dicte ton intention.
-5. Vérifie le mode de confidentialité (confidentiel par défaut).
-6. **Générer**, relis, puis **Insérer dans Outlook**.
+## Pour les utilisateurs
 
-En mode rédaction, le complément demande le corps complet (citation comprise) quand Outlook le permet, plus les destinataires.
+1. Télécharge le [manifeste](https://bot-mail-outlook-addin-chi.vercel.app/manifest.xml).
+2. Outlook : **Get Add-ins → Mes compléments → Ajouter à partir d’un fichier**.
+3. Ouvre un mail → **Bot Mail IA**.
+
+Le Microsoft Store (AppSource) est l’objectif suivant, pour installer sans fichier XML.
 
 ## Confidentialité
 
-- **Confidentiel (défaut)** : le serveur n’envoie pas le corps du mail à Groq, seulement l’intention.
-- **Normal** : version anonymisée (emails, IBAN, téléphones, montants, etc.). Les noms peuvent rester.
+- **Confidentiel (défaut)** : le serveur n’envoie pas le corps du mail à Groq.
+- **Plus précis** : version anonymisée (emails, IBAN, téléphones, montants). Les noms peuvent rester.
 
-La génération marche dans Outlook. Microsoft a coupé les jetons Exchange Online : le complément n’en dépend plus. Limite : 20 requêtes / 15 min par IP.
+Détail : [politique de confidentialité](https://bot-mail-outlook-addin-chi.vercel.app/privacy.html).
 
-Pour limiter la conservation chez Groq : [Data Controls](https://console.groq.com/settings/data-controls) (zero retention / politique de ton compte). Ce n’est pas activable uniquement depuis le code.
-
-## Stack
-
-- Outlook Add-in (Office.js, Mailbox 1.3+)
-- Panneau `public/taskpane.*`
-- API Vercel `api/generate-reply.js`
-- Groq : `openai/gpt-oss-120b` (défaut), `openai/gpt-oss-20b`, `qwen/qwen3.8-27b`
+Limites anti-abus : 10 générations / 15 min et 40 / jour par IP.
 
 ## Local
 
@@ -36,32 +29,22 @@ npm test
 npm run dev
 ```
 
-Serveur : `http://127.0.0.1:3000` (localhost uniquement). Pas de jeton Outlook en local.
-
-Variables (`.env`, jamais commitées) :
+Serveur : `http://127.0.0.1:3000` (accueil) et `/taskpane.html` (panneau).
 
 ```
 GROQ_API_KEY=
 ADDIN_AUDIENCE=https://bot-mail-outlook-addin-chi.vercel.app
 ```
 
-## Déploiement
+Dans la [console Groq](https://console.groq.com), mets aussi un plafond de dépense : l’API est publique.
 
-Le projet se déploie sur Vercel (`bot-mail-outlook-addin-chi.vercel.app`).
+## Stack
 
-Pour déployer depuis Git :
+Outlook Add-in (Office.js) · Vercel · Groq (`openai/gpt-oss-120b`)
 
-1. Pousse ce dépôt vers GitHub / GitLab.
-2. Dans Vercel : **Import Git Repository**, projet existant ou nouveau.
-3. Variables d’environnement Production : `GROQ_API_KEY`, `ADDIN_AUDIENCE`.
-4. Chaque push sur la branche de production redéploie.
+## Publication Store (plus tard)
 
-Sinon : `npx vercel --prod` depuis ce dossier.
-
-Après déploiement, réinstalle le `manifest.xml` (version actuelle **1.0.3.0**) si Outlook garde l’ancien cache.
-
-## Hors périmètre
-
-- Publication Microsoft Store
-- SSO Entra ID (app Azure + `WebApplicationInfo` dans le manifeste)
-- Gestion d’équipe / comptes multiples
+1. Compte [Partner Center](https://partner.microsoft.com/).
+2. Fiche AppSource (description, icônes, URL support + confidentialité déjà en ligne).
+3. Soumission du manifeste hébergé en HTTPS.
+4. Validation Microsoft (plusieurs jours).

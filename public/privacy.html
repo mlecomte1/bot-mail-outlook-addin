@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; style-src 'self'; img-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"
+  />
+  <meta http-equiv="Referrer-Policy" content="no-referrer" />
+  <title>Confidentialité — Bot Mail IA</title>
+  <link rel="stylesheet" href="./site.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <img src="./icon.png" alt="" width="40" height="40" />
+        <div>
+          <strong>Bot Mail IA</strong>
+          <span>Confidentialité</span>
+        </div>
+      </div>
+      <nav>
+        <a href="./">Accueil</a>
+      </nav>
+    </header>
+
+    <h1>Politique de confidentialité</h1>
+    <p class="lede">Dernière mise à jour : 14 septembre 2026.</p>
+
+    <section>
+      <h2>Qui traite les données</h2>
+      <p>
+        Bot Mail IA est un complément Outlook open source. L’hébergement du panneau et de
+        l’API est sur Vercel. La génération de texte est faite par Groq.
+      </p>
+    </section>
+
+    <section>
+      <h2>Ce qui est envoyé à l’IA</h2>
+      <p>
+        <strong>Mode confidentiel (défaut)</strong> : seule ton intention est envoyée à Groq,
+        pas le corps du mail.<br />
+        <strong>Mode plus précis</strong> : une version anonymisée du mail (emails, téléphones,
+        IBAN, montants masqués) est envoyée avec l’intention. Les noms peuvent rester.
+      </p>
+    </section>
+
+    <section>
+      <h2>Ce qui n’est pas collecté</h2>
+      <p>
+        Pas de compte, pas de mot de passe, pas de tracking publicitaire. Les brouillons
+        restent dans le navigateur Outlook de ta machine (localStorage), sans le contenu du
+        mail.
+      </p>
+    </section>
+
+    <section>
+      <h2>Journaux techniques</h2>
+      <p>
+        L’API peut enregistrer des événements techniques (succès, erreur, quota) sans le
+        texte du mail ni ton intention. L’adresse IP sert uniquement au quota anti-abus.
+      </p>
+    </section>
+
+    <section>
+      <h2>Sous-traitants</h2>
+      <p>
+        Vercel (hébergement) et Groq (modèle IA). Leurs durées de conservation dépendent de
+        leurs réglages. Pour Groq, une option « zero retention » peut être activée sur le
+        compte qui détient la clé API.
+      </p>
+    </section>
+
+    <section>
+      <h2>Contact</h2>
+      <p>
+        Questions : via le dépôt
+        <a href="https://github.com/mlecomte1/bot-mail-outlook-addin">GitHub</a>.
+      </p>
+    </section>
+  </div>
+</body>
+</html>

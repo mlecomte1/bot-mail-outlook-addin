@@ -156,7 +156,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  const filePath = urlPath === "/" ? "/taskpane.html" : urlPath;
+  const filePath = urlPath === "/" ? "/index.html" : urlPath;
   const fullPath = path.resolve(publicDir, `.${filePath}`);
 
   if (!isInsidePublic(fullPath)) {

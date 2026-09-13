@@ -10,7 +10,9 @@ const MAX_EMAIL_CHARS = 8000;
 const MAX_INTENTION_CHARS = 2000;
 const MAX_TOKEN_CHARS = 8192;
 const RATE_WINDOW_MS = 15 * 60 * 1000;
-const RATE_MAX_REQUESTS = 20;
+const RATE_MAX_REQUESTS = 10;
+const RATE_DAY_MS = 24 * 60 * 60 * 1000;
+const RATE_MAX_DAY = 40;
 const METADATA_TTL_MS = 12 * 60 * 60 * 1000;
 
 function productionAudience() {
@@ -107,30 +109,31 @@ function clientIp(req) {
   return "unknown";
 }
 
-function rateLimit(ip) {
+function rateLimit(key, windowMs = RATE_WINDOW_MS, max = RATE_MAX_REQUESTS) {
   const now = Date.now();
   const store = getStore().rate;
 
-  for (const [key, entry] of store) {
-    if (now - entry.start > RATE_WINDOW_MS) {
-      store.delete(key);
+  for (const [id, entry] of store) {
+    const window = entry.windowMs || RATE_WINDOW_MS;
+    if (now - entry.start > window) {
+      store.delete(id);
     }
   }
 
-  const current = store.get(ip);
+  const current = store.get(key);
 
-  if (!current || now - current.start > RATE_WINDOW_MS) {
-    store.set(ip, { start: now, count: 1 });
-    return { ok: true, remaining: RATE_MAX_REQUESTS - 1 };
+  if (!current || now - current.start > windowMs) {
+    store.set(key, { start: now, count: 1, windowMs });
+    return { ok: true, remaining: max - 1 };
   }
 
   current.count += 1;
 
-  if (current.count > RATE_MAX_REQUESTS) {
+  if (current.count > max) {
     return { ok: false, remaining: 0 };
   }
 
-  return { ok: true, remaining: RATE_MAX_REQUESTS - current.count };
+  return { ok: true, remaining: max - current.count };
 }
 
 function clip(value, max) {
@@ -432,5 +435,7 @@ module.exports = {
   officeUserId,
   logEvent,
   requiresOfficeToken,
+  RATE_DAY_MS,
+  RATE_MAX_DAY,
   allowedOrigin,
 };
