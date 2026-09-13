@@ -178,6 +178,7 @@ textarea:focus {
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 10px;
 }
@@ -226,7 +227,7 @@ button.ghost {
 }
 
 .actions button {
-  flex: 1;
+  flex: 1 1 120px;
 }
 
 button.listening {

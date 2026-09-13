@@ -9,32 +9,44 @@ function getApiUrl() {
   return new URL("/api/generate-reply", window.location.href).toString();
 }
 
-Office.onReady((info) => {
+document.addEventListener("DOMContentLoaded", bindUi);
+
+if (document.readyState !== "loading") {
   bindUi();
+}
 
-  if (info.host === Office.HostType.Outlook) {
-    officeReady = true;
-    setStatus("Complément prêt.");
-    readCurrentMail();
-    return;
-  }
+if (typeof Office !== "undefined" && typeof Office.onReady === "function") {
+  Office.onReady((info) => {
+    bindUi();
 
-  officeReady = false;
+    if (info.host === Office.HostType.Outlook) {
+      officeReady = true;
+      setStatus("Complément prêt.");
+      readCurrentMail();
+      return;
+    }
+
+    officeReady = false;
+    setStatus("Ouvre ce panneau depuis Outlook pour lire et insérer un mail.");
+  });
+} else {
   setStatus("Ouvre ce panneau depuis Outlook pour lire et insérer un mail.");
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-  bindUi();
-});
+}
 
 function bindUi() {
   if (uiBound) {
     return;
   }
+
+  const generateBtn = document.getElementById("generateBtn");
+  if (!generateBtn) {
+    return;
+  }
+
   uiBound = true;
   document.getElementById("readMailBtn").addEventListener("click", readCurrentMail);
   document.getElementById("voiceBtn").addEventListener("click", toggleDictation);
-  document.getElementById("generateBtn").addEventListener("click", generateReply);
+  generateBtn.addEventListener("click", generateReply);
   document.getElementById("insertBtn").addEventListener("click", insertReplyIntoOutlook);
   document.getElementById("clearBtn").addEventListener("click", clearAll);
   bindPills("privacyPills", "data-privacy", (value) => {
@@ -49,6 +61,9 @@ function bindUi() {
 
 function bindPills(listId, attr, onChange) {
   const root = document.getElementById(listId);
+  if (!root) {
+    return;
+  }
   root.addEventListener("click", (event) => {
     const button = event.target.closest(`button[${attr}]`);
     if (!button) {
@@ -61,7 +76,11 @@ function bindPills(listId, attr, onChange) {
 }
 
 function updatePrivacyHint() {
-  document.getElementById("privacyHint").textContent =
+  const hint = document.getElementById("privacyHint");
+  if (!hint) {
+    return;
+  }
+  hint.textContent =
     privacyMode === "normal"
       ? "Version anonymisée du mail envoyée à l’IA."
       : "Le contenu du mail n’est pas envoyé à l’IA.";
@@ -69,6 +88,9 @@ function updatePrivacyHint() {
 
 function setStatus(message, isError) {
   const statusEl = document.getElementById("status");
+  if (!statusEl) {
+    return;
+  }
   statusEl.textContent = message;
   statusEl.classList.toggle("error", Boolean(isError));
   statusEl.classList.toggle("ok", !isError && /prêt|générée|insérée|lu|dictée/i.test(message));
@@ -133,6 +155,44 @@ function formatRecipients(list) {
     .join(", ");
 }
 
+function formatAddress(entry) {
+  if (!entry || typeof entry !== "object") {
+    return "";
+  }
+  return entry.displayName || entry.emailAddress || "";
+}
+
+async function getTextField(field) {
+  if (!field) {
+    return "";
+  }
+
+  if (typeof field.getAsync === "function") {
+    const value = await officeAsync((callback) => field.getAsync(callback));
+    return typeof value === "string" ? value : "";
+  }
+
+  return typeof field === "string" ? field : "";
+}
+
+async function getAddressField(field) {
+  if (!field) {
+    return "";
+  }
+
+  try {
+    if (typeof field.getAsync === "function") {
+      const value = await officeAsync((callback) => field.getAsync(callback));
+      return formatAddress(value) || formatRecipients(value);
+    }
+
+    return formatAddress(field) || formatRecipients(field);
+  } catch (error) {
+    console.error(error);
+    return "";
+  }
+}
+
 async function getMailBody(item) {
   if (!item?.body?.getAsync) {
     return "";
@@ -158,58 +218,49 @@ async function getMailBody(item) {
 }
 
 async function readCurrentMail() {
-  if (!officeReady || !Office.context.mailbox.item) {
+  if (!officeReady || !Office.context?.mailbox?.item) {
     setStatus("Outlook n'est pas encore prêt.", true);
     return;
   }
 
-  const item = Office.context.mailbox.item;
-  const subject = item.subject || "";
-  const lines = [];
-
-  let composeType = "";
-  if (item.getComposeTypeAsync) {
-    const compose = await officeAsync((callback) => item.getComposeTypeAsync(callback));
-    composeType = compose?.composeType || "";
-  }
-
-  let from = "";
   try {
-    from = item.from?.displayName || item.from?.emailAddress || "";
+    const item = Office.context.mailbox.item;
+    const lines = [];
+
+    let composeType = "";
+    if (item.getComposeTypeAsync) {
+      const compose = await officeAsync((callback) => item.getComposeTypeAsync(callback));
+      composeType = compose?.composeType || "";
+    }
+
+    const from = await getAddressField(item.from);
+    const to = await getAddressField(item.to);
+    const cc = await getAddressField(item.cc);
+    const subject = await getTextField(item.subject);
+
+    if (composeType) {
+      lines.push(`Type : ${composeType}`);
+    }
+    if (from) {
+      lines.push(`De : ${from}`);
+    }
+    if (to) {
+      lines.push(`À : ${to}`);
+    }
+    if (cc) {
+      lines.push(`Cc : ${cc}`);
+    }
+    lines.push(`Objet : ${subject}`);
+    lines.push("");
+    lines.push(await getMailBody(item));
+
+    document.getElementById("emailText").value = lines.join("\n").trim();
+    document.getElementById("intentionText").focus();
+    setStatus(composeType ? "Mail lu (mode rédaction)." : "Mail lu.");
   } catch (error) {
     console.error(error);
+    setStatus("Impossible de lire le mail ouvert.", true);
   }
-
-  const to = item.to?.getAsync
-    ? formatRecipients(await officeAsync((callback) => item.to.getAsync(callback)))
-    : "";
-  const cc = item.cc?.getAsync
-    ? formatRecipients(await officeAsync((callback) => item.cc.getAsync(callback)))
-    : "";
-
-  if (composeType) {
-    lines.push(`Type : ${composeType}`);
-  }
-  if (from) {
-    lines.push(`De : ${from}`);
-  }
-  if (to) {
-    lines.push(`À : ${to}`);
-  }
-  if (cc) {
-    lines.push(`Cc : ${cc}`);
-  }
-  lines.push(`Objet : ${subject}`);
-  lines.push("");
-  lines.push(await getMailBody(item));
-
-  document.getElementById("emailText").value = lines.join("\n").trim();
-  document.getElementById("intentionText").focus();
-  setStatus(
-    composeType
-      ? "Mail lu (mode rédaction)."
-      : "Mail lu."
-  );
 }
 
 function getSpeechRecognition() {
@@ -374,7 +425,7 @@ function insertReplyIntoOutlook() {
     return;
   }
 
-  if (!officeReady || !Office.context.mailbox.item) {
+  if (!officeReady || !Office.context?.mailbox?.item) {
     setStatus("Outlook n'est pas prêt.", true);
     return;
   }

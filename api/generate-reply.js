@@ -43,7 +43,25 @@ function extractReply(data) {
     return "";
   }
 
-  return sanitizeReply(message.content);
+  const content = message.content;
+  if (typeof content === "string") {
+    return sanitizeReply(content);
+  }
+
+  if (Array.isArray(content)) {
+    return sanitizeReply(
+      content
+        .map((part) => {
+          if (typeof part === "string") {
+            return part;
+          }
+          return part?.text || part?.content || "";
+        })
+        .join("\n")
+    );
+  }
+
+  return "";
 }
 
 function pickModel(value) {
@@ -64,7 +82,7 @@ function languageHint(value) {
   return "Rédige dans la langue de l'intention (français par défaut).";
 }
 
-module.exports = async function handler(req, res) {
+async function handler(req, res) {
   applyCors(req, res);
 
   if (req.method === "OPTIONS") {
@@ -178,7 +196,7 @@ module.exports = async function handler(req, res) {
     const groqBody = {
       model,
       temperature: 0.4,
-      max_completion_tokens: 1024,
+      max_completion_tokens: 2048,
       user: tokenPayload
         ? crypto
             .createHash("sha256")
@@ -227,10 +245,19 @@ Rédige une réponse email professionnelle en texte brut uniquement.`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(groqBody),
+        signal: AbortSignal.timeout(8000),
       }
     );
 
-    const data = await groqResponse.json();
+    const rawGroq = await groqResponse.text();
+    let data = {};
+
+    try {
+      data = rawGroq ? JSON.parse(rawGroq) : {};
+    } catch {
+      logEvent("groq_error", { status: groqResponse.status, reason: "invalid_json" });
+      return jsonError(res, 502, "Erreur pendant la génération IA.");
+    }
 
     if (!groqResponse.ok) {
       logEvent("groq_error", { status: groqResponse.status });
@@ -254,7 +281,15 @@ Rédige une réponse email professionnelle en texte brut uniquement.`,
     }
     return res.status(200).json({ reply });
   } catch (error) {
+    if (error?.name === "TimeoutError" || error?.name === "AbortError") {
+      logEvent("groq_timeout", { status: 504 });
+      return jsonError(res, 504, "L'IA met trop de temps à répondre. Réessaie.");
+    }
     logEvent("server_error", { status: 500, reason: error?.message || "unknown" });
     return jsonError(res, 500, "Erreur serveur pendant la génération.");
   }
 };
+
+handler.extractReply = extractReply;
+
+module.exports = handler;
