@@ -1,0 +1,16 @@
+{
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "no-referrer" },
+        { "key": "Cache-Control", "value": "no-store" },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' https://appsforoffice.microsoft.com https://ajax.aspnetcdn.com; style-src 'self'; connect-src 'self' https://www.google.com https://www.googleapis.com https://speech.googleapis.com; img-src 'self'; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"
+        }
+      ]
+    }
+  ]
+}

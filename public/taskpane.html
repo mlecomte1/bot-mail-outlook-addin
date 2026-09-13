@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' https://appsforoffice.microsoft.com https://ajax.aspnetcdn.com; style-src 'self'; connect-src 'self' https://www.google.com https://www.googleapis.com https://speech.googleapis.com; img-src 'self'; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"
+  />
+  <meta http-equiv="Referrer-Policy" content="no-referrer" />
+  <title>Bot Mail IA</title>
+  <link rel="stylesheet" href="./taskpane.css" />
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+</head>
+<body>
+  <main>
+    <h1>Bot Mail IA</h1>
+
+    <p class="small">
+      Ouvre un mail Outlook, lis-le, indique ton intention, puis génère et insère la réponse.
+    </p>
+
+    <button id="readMailBtn">Lire le mail ouvert</button>
+
+    <label for="emailText">Mail détecté</label>
+    <textarea id="emailText" placeholder="Le contenu du mail apparaîtra ici..."></textarea>
+
+    <label for="intentionText">Ton intention</label>
+    <textarea id="intentionText" placeholder="Ex : Dis-lui que j’ai bien reçu et que je reviens demain."></textarea>
+
+    <label for="privacyMode">Mode de confidentialité</label>
+    <select id="privacyMode">
+      <option value="confidential" selected>Mode confidentiel - données limitées (recommandé)</option>
+      <option value="normal">Mode normal - réponse plus précise</option>
+    </select>
+
+    <p class="small">
+      Par défaut, le contenu du mail n’est pas envoyé à l’IA. Le mode normal envoie une version anonymisée à Groq.
+    </p>
+
+    <div class="grid-2">
+      <div>
+        <label for="toneSelect">Ton</label>
+        <select id="toneSelect">
+          <option value="standard">Standard</option>
+          <option value="court">Court</option>
+          <option value="formel">Formel</option>
+        </select>
+      </div>
+      <div>
+        <label for="languageSelect">Langue</label>
+        <select id="languageSelect">
+          <option value="auto">Auto</option>
+          <option value="fr">Français</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+    </div>
+
+    <label for="modelSelect">Modèle</label>
+    <select id="modelSelect">
+      <option value="openai/gpt-oss-120b">Qualité — GPT-OSS 120B</option>
+      <option value="openai/gpt-oss-20b">Rapide — GPT-OSS 20B</option>
+      <option value="qwen/qwen3.8-27b">Qwen 3.8 27B</option>
+    </select>
+
+    <label class="check">
+      <input id="noSignature" type="checkbox" checked />
+      Ne pas inventer de signature
+    </label>
+
+    <div class="row">
+      <button id="voiceBtn" type="button">Dicter</button>
+      <button id="generateBtn" type="button">Générer</button>
+    </div>
+
+    <label for="replyText">Réponse proposée</label>
+    <textarea id="replyText" placeholder="La réponse IA apparaîtra ici..."></textarea>
+
+    <div class="row">
+      <button id="insertBtn" type="button">Insérer dans Outlook</button>
+      <button id="clearBtn" class="secondary" type="button">Effacer</button>
+    </div>
+
+    <label>Brouillons récents</label>
+    <p class="small">Stockés uniquement sur cet ordinateur, sans le contenu du mail.</p>
+    <ul id="draftList"></ul>
+
+    <p id="status"></p>
+  </main>
+
+  <script src="./taskpane.js"></script>
+</body>
+</html>

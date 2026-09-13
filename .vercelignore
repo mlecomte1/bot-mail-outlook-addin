@@ -1,0 +1,6 @@
+.env
+.env.local
+tmp-*
+body.json
+tmp-api-body.json
+tmp-api-response.json
