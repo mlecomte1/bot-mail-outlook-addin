@@ -1,6 +1,3 @@
-const DRAFTS_KEY = "botmail.drafts.v1";
-const MAX_DRAFTS = 15;
-
 let officeReady = false;
 let recognition = null;
 let listening = false;
@@ -48,7 +45,6 @@ function bindUi() {
     language = value;
   });
   updatePrivacyHint();
-  renderDrafts();
 }
 
 function bindPills(listId, attr, onChange) {
@@ -75,7 +71,7 @@ function setStatus(message, isError) {
   const statusEl = document.getElementById("status");
   statusEl.textContent = message;
   statusEl.classList.toggle("error", Boolean(isError));
-  statusEl.classList.toggle("ok", !isError && /prêt|générée|insérée|lu|dictée|restauré/i.test(message));
+  statusEl.classList.toggle("ok", !isError && /prêt|générée|insérée|lu|dictée/i.test(message));
 }
 
 function escapeHtml(text) {
@@ -286,57 +282,6 @@ function toggleDictation() {
   }
 }
 
-function loadDrafts() {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(DRAFTS_KEY) || "[]");
-    return Array.isArray(parsed) ? parsed.slice(0, MAX_DRAFTS) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveDraft(entry) {
-  const drafts = loadDrafts().filter((item) => item.reply !== entry.reply);
-  drafts.unshift(entry);
-  localStorage.setItem(DRAFTS_KEY, JSON.stringify(drafts.slice(0, MAX_DRAFTS)));
-  renderDrafts();
-}
-
-function renderDrafts() {
-  const list = document.getElementById("draftList");
-  const drafts = loadDrafts();
-  list.innerHTML = "";
-
-  if (!drafts.length) {
-    const item = document.createElement("li");
-    item.className = "empty";
-    item.textContent = "Aucun brouillon pour l’instant.";
-    list.appendChild(item);
-    return;
-  }
-
-  drafts.forEach((draft) => {
-    const item = document.createElement("li");
-    const button = document.createElement("button");
-    const when = draft.at ? new Date(draft.at).toLocaleString("fr-FR", {
-      day: "2-digit",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    }) : "";
-    const preview = (draft.intention || "Brouillon").slice(0, 70);
-    button.type = "button";
-    button.textContent = `${when} · ${preview}`;
-    button.addEventListener("click", () => {
-      document.getElementById("intentionText").value = draft.intention || "";
-      document.getElementById("replyText").value = draft.reply || "";
-      setStatus("Brouillon restauré.");
-    });
-    item.appendChild(button);
-    list.appendChild(item);
-  });
-}
-
 async function generateReply() {
   const email = document.getElementById("emailText").value.trim();
   const intention = document.getElementById("intentionText").value.trim();
@@ -411,11 +356,6 @@ async function generateReply() {
 
     document.getElementById("replyText").value = data.reply;
     document.getElementById("replyText").focus();
-    saveDraft({
-      at: Date.now(),
-      intention,
-      reply: data.reply,
-    });
     setStatus("Réponse générée.");
   } catch (error) {
     console.error(error);
